@@ -93,9 +93,18 @@ const pct=c=>{const n=c.right+c.wrong;return n?c.right/n*100:-1};
 // ---- Jisho ----
 async function jisho(forms){
   const k=encodeURIComponent(forms[0]);
-  const res=await fetch(WORKER_URL?WORKER_URL+'?keyword='+k:'https://jisho.org/api/v1/search/words?keyword='+k);
-  if(!res.ok)throw new Error('HTTP '+res.status);
-  const j=await res.json();
+  const url=WORKER_URL?WORKER_URL+'?keyword='+k:'https://jisho.org/api/v1/search/words?keyword='+k;
+  const host=new URL(url).host;
+  let j=null,err='';
+  for(let i=0;i<3&&!j;i++){
+    if(i)await new Promise(r=>setTimeout(r,500*i));
+    try{
+      const res=await fetch(url);
+      if(res.ok)j=await res.json();
+      else{err='HTTP '+res.status+' via '+host;if(res.status<500)break}
+    }catch(e){err=(e&&e.message?e.message:'error')+' via '+host}
+  }
+  if(!j)throw new Error(err);
   const m=x=>forms.includes(x.word)||forms.includes(x.reading);
   const hit=j.data.find(e=>e.japanese.some(m));
   if(!hit)return null;
