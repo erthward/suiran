@@ -3,12 +3,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Hina+Mincho&display=swap" rel="stylesheet">
 <title>Vocab</title>
 <style>
 :root{--bg:#fff;--fg:#000;--mut:#777;--card:#fff;--ac:#000;--bd:#ddd;--g:#178d7f;--r:#a02e60}
 @media(prefers-color-scheme:dark){:root{--bg:#000;--fg:#fff;--ac:#fff;--mut:#999;--card:#111;--bd:#333}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,"Noto Sans JP",sans-serif}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif}
+/* handwriting-style Japanese: change "Klee One" to "Yuji Syuku" (brush) or "Zen Kurenaido" (handwriting) to try others */
+#sw,#sr,.item span,input,textarea{font-family:"Klee One","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif}
 .screen{display:none;height:100%;padding:16px;flex-direction:column;gap:12px;overflow-y:auto}
 .screen.on{display:flex}
 button,input,textarea{font:inherit;color:inherit}
@@ -16,10 +20,13 @@ button,input,textarea{font:inherit;color:inherit}
 .big.p{background:var(--ac);border-color:var(--ac);color:var(--bg)}
 .btn{padding:12px 16px;border:1px solid var(--bd);background:var(--card);border-radius:10px}
 .btn.p{background:var(--ac);border-color:var(--ac);color:var(--bg)}
-#title{text-align:center;font-size:3.4rem;letter-spacing:.1em;padding:8px 0}
+#title{text-align:center;font-size:3.6rem;letter-spacing:.08em;padding:8px 0;font-family:"Hina Mincho","Klee One",serif}
+#title span{color:var(--fg)}
+#title .g{text-shadow:0 0 12px var(--g),1px 1px 0 var(--g)}#title .r{text-shadow:0 0 12px var(--r),1px 1px 0 var(--r)}
+#flash span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:40vmin;font-family:"Hina Mincho","Klee One",serif;opacity:.5}
 #flash{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:5}
-#flash.go{animation:fl .5s ease-out}
-@keyframes fl{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+#flash.go{animation:fl 1s ease-out}
+@keyframes fl{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
 .back{align-self:flex-start;border:0;background:none;color:var(--mut);font-size:1rem;padding:4px 0}
 input,textarea{width:100%;padding:12px;border:1px solid var(--bd);border-radius:10px;background:var(--card);font-size:1.1rem}
 label{font-size:.8rem;color:var(--mut)}
@@ -33,7 +40,7 @@ label{font-size:.8rem;color:var(--mut)}
 </style></head><body>
 
 <div id="home" class="screen on">
-  <div id="title"><span style="color:var(--g)">翠</span><span style="color:var(--r)">嵐</span></div>
+  <div id="title"><span class="g">翠</span><span class="r">嵐</span></div>
   <button class="big" onclick="openAdd()">Add</button>
   <button class="big" onclick="openReview()">Review</button>
   <button class="big p" onclick="openStudy()">Study</button>
@@ -71,7 +78,7 @@ label{font-size:.8rem;color:var(--mut)}
 
 <script>
 const SEED=`調整; 調子; 凸凹; 過ぎる; 頬, 頰; 痩せる, 瘠せる; さすが, 流石, 遉, 有繋; 候補; ほら, ほれ; 決して; 加える; なにやら, 何やら; おまけに, お負けに, 御負けに; 継ぐ, 嗣ぐ, 続ぐ, 襲ぐ; 顎, 頤, 腭; 特徴; サンゴ礁, 珊瑚礁; 沼; 雰囲気; 混入; 乱れ, 紊れ; 初対面; 賑やか; 押さえる, 押える; 畳; 狸の金玉八畳敷き, 狸の睾丸八畳敷き; 見渡す, 見わたす; 家庭; 玄関; ベニヤ, ベニア; しーん, しいん; 了解, 諒解, 領解, 領会; 開始; 終了; 呼吸; のち, 後; 揺れる; 設置; 点滅; 蛍光灯; 急速; 当たり前, 当り前; 暮れる, 昏れる, 眩れる, 暗れる; 異なる, 異る; 興味深い, 興味ぶかい; 帰る, 還る; 運動; 納得; 芸人; 軍団; 一晩中; 一晩, ひと晩; 拝見, 拜見; 拝む; のみ; 肉親; 高齢; 大家, 大屋; 実は; 実に; 実; 混じる, 交じる, 雑じる; いつまでも, 何時までも; わびしい, 侘しい, 侘びしい; それにしても; ずれる, ズレる; ずれ; 持ち主, 持主; 異; くぐる, 潜る; 超過; 響き, 響; 響く; 影響; だろう, だろ; 裕福; 多く; 住宅; 質素; 質; 向け; 一目, ひと目; 内心; 務まる, 勤まる; 視線; 添える, 副える; 移る, 遷る; 扱う; たくましい, 逞しい; 束ねる; 束, 把; ばら, 薔薇; 初老; がっしり; 渋い; 釣り, 釣; お釣り, お釣; 釣る; ひよどり, 鵯, ひよ鳥; 店頭; 思い切り, 思いきり; 思い切る; とっさに, 咄嗟に; かかる, 罹る; 派手; 夢想; 通じる; 現在, 見在; あふれる, 溢れる; 泉; 飴; 空間; 歪む; 一歩, １歩; 保存; ありふれた, 有り触れた; 語句; 句読点; 句; 文句; 俳句; 俳人; まず, 先ず; 許し, 赦し; これで; かつて, 嘗て, 曽て, 都て; 表す, 現す, 表わす, 現わす, 顕す; 暮らす, 暮す; 遮断; 呆然, 茫然, 惘然; 全く; 余る; 早速; 改めて; 痛む, 傷む; 胸; 一体; 改める; 日々, 日日; 天邪鬼, 天の邪鬼, 天ん邪鬼, 天之邪鬼, 天邪久; 求める; として; 結局; といっても, と言っても; 抱える; いくら, 幾ら; にらむ, 睨む; 谷間, 谷あい; 性に合う; 在宅; 収入; すでに, 既に, 已に; 相手; 市民; 生計; 一室; 退職; ほど, 程; 同僚; 編む; 編集, 編修, 編輯; 出版, 出板`;
-const PROXY=''; // optional: a CORS proxy prefix if direct Jisho calls get blocked
+const WORKER_URL='https://suiran-jisho.ihavehands.workers.dev'; // paste your Cloudflare Worker URL here, e.g. https://suiran-jisho.yourname.workers.dev
 const K='vocab1',$=id=>document.getElementById(id);
 const mk=(w,alts)=>({id:Date.now()+Math.random(),w,alts:alts||'',r:'',d:'',tried:false,right:0,wrong:0,streak:0,due:0});
 let cards=JSON.parse(localStorage.getItem(K)||'null');
@@ -83,8 +90,8 @@ const pct=c=>{const n=c.right+c.wrong;return n?c.right/n*100:-1};
 
 // ---- Jisho ----
 async function jisho(forms){
-  const u='https://jisho.org/api/v1/search/words?keyword='+encodeURIComponent(forms[0]);
-  const res=await fetch(PROXY?PROXY+encodeURIComponent(u):u);
+  const k=encodeURIComponent(forms[0]);
+  const res=await fetch(WORKER_URL?WORKER_URL+'?keyword='+k:'https://jisho.org/api/v1/search/words?keyword='+k);
   if(!res.ok)throw new Error('http');
   const j=await res.json();
   const m=x=>forms.includes(x.word)||forms.includes(x.reading);
@@ -186,7 +193,7 @@ function answer(ok){
   if(ok){cur.right++;cur.streak++}else{cur.wrong++;cur.streak=0}
   cur.due=Date.now()+(cur.streak===0?5*60e3:IV[Math.min(cur.streak-1,7)]*864e5);
   last=cur.id;save();
-  const f=$('flash');f.style.background='radial-gradient(circle at 50% 50%,'+(ok?'rgba(23,141,127,.55)':'rgba(160,46,96,.55)')+' 0%,'+(ok?'rgba(23,141,127,.25)':'rgba(160,46,96,.25)')+' 55%,transparent 100%)';f.classList.remove('go');void f.offsetWidth;f.classList.add('go');
+  const f=$('flash');f.innerHTML='<span style="color:'+(ok?'#178d7f':'#a02e60')+'">'+(ok?'翠':'嵐')+'</span>';f.style.background='radial-gradient(circle at 50% 50%,'+(ok?'rgba(23,141,127,.55)':'rgba(160,46,96,.55)')+' 0%,'+(ok?'rgba(23,141,127,.25)':'rgba(160,46,96,.25)')+' 55%,transparent 100%)';f.classList.remove('go');void f.offsetWidth;f.classList.add('go');
   const c=$('card');c.style.transition='transform .15s,opacity .15s';c.style.transform='translateX('+(ok?'-':'')+'100vw)';c.style.opacity=0;
   setTimeout(()=>{c.style.transition='none';c.style.transform='';c.style.opacity=1;next()},160);
 }
@@ -203,5 +210,6 @@ function editCur(){if(cur)editCard(cur,'study')}
   });
   c.addEventListener('pointercancel',()=>{x0=null;c.style.transform=''});
 })();
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script></body></html>
