@@ -75,12 +75,12 @@ label{font-size:.8rem;color:var(--mut)}
   </div>
 </div>
 <div id="flash"></div>
+<div id="ver" style="position:fixed;left:0;right:0;bottom:4px;text-align:center;font-size:.7rem;color:var(--mut);pointer-events:none"></div>
 <div id="toast"></div>
 
 <script>
 const SEED=`調整; 調子; 凸凹; 過ぎる; 頬, 頰; 痩せる, 瘠せる; さすが, 流石, 遉, 有繋; 候補; ほら, ほれ; 決して; 加える; なにやら, 何やら; おまけに, お負けに, 御負けに; 継ぐ, 嗣ぐ, 続ぐ, 襲ぐ; 顎, 頤, 腭; 特徴; サンゴ礁, 珊瑚礁; 沼; 雰囲気; 混入; 乱れ, 紊れ; 初対面; 賑やか; 押さえる, 押える; 畳; 狸の金玉八畳敷き, 狸の睾丸八畳敷き; 見渡す, 見わたす; 家庭; 玄関; ベニヤ, ベニア; しーん, しいん; 了解, 諒解, 領解, 領会; 開始; 終了; 呼吸; のち, 後; 揺れる; 設置; 点滅; 蛍光灯; 急速; 当たり前, 当り前; 暮れる, 昏れる, 眩れる, 暗れる; 異なる, 異る; 興味深い, 興味ぶかい; 帰る, 還る; 運動; 納得; 芸人; 軍団; 一晩中; 一晩, ひと晩; 拝見, 拜見; 拝む; のみ; 肉親; 高齢; 大家, 大屋; 実は; 実に; 実; 混じる, 交じる, 雑じる; いつまでも, 何時までも; わびしい, 侘しい, 侘びしい; それにしても; ずれる, ズレる; ずれ; 持ち主, 持主; 異; くぐる, 潜る; 超過; 響き, 響; 響く; 影響; だろう, だろ; 裕福; 多く; 住宅; 質素; 質; 向け; 一目, ひと目; 内心; 務まる, 勤まる; 視線; 添える, 副える; 移る, 遷る; 扱う; たくましい, 逞しい; 束ねる; 束, 把; ばら, 薔薇; 初老; がっしり; 渋い; 釣り, 釣; お釣り, お釣; 釣る; ひよどり, 鵯, ひよ鳥; 店頭; 思い切り, 思いきり; 思い切る; とっさに, 咄嗟に; かかる, 罹る; 派手; 夢想; 通じる; 現在, 見在; あふれる, 溢れる; 泉; 飴; 空間; 歪む; 一歩, １歩; 保存; ありふれた, 有り触れた; 語句; 句読点; 句; 文句; 俳句; 俳人; まず, 先ず; 許し, 赦し; これで; かつて, 嘗て, 曽て, 都て; 表す, 現す, 表わす, 現わす, 顕す; 暮らす, 暮す; 遮断; 呆然, 茫然, 惘然; 全く; 余る; 早速; 改めて; 痛む, 傷む; 胸; 一体; 改める; 日々, 日日; 天邪鬼, 天の邪鬼, 天ん邪鬼, 天之邪鬼, 天邪久; 求める; として; 結局; といっても, と言っても; 抱える; いくら, 幾ら; にらむ, 睨む; 谷間, 谷あい; 性に合う; 在宅; 収入; すでに, 既に, 已に; 相手; 市民; 生計; 一室; 退職; ほど, 程; 同僚; 編む; 編集, 編修, 編輯; 出版, 出板`;
-//const WORKER_URL='https://suiran-jisho.ihavehands.workers.dev'; // paste your Cloudflare Worker URL here, e.g. https://suiran-jisho.yourname.workers.dev
-const WORKER_URL='https://fresh-rat-4711.ihavehands.deno.net'; // paste your Deno Worker URL here, e.g. https://suiran-jisho.yourname.workers.dev
+const WORKER_URL='https://suiran-jisho.ihavehands.workers.dev'; // paste your Cloudflare Worker URL here, e.g. https://suiran-jisho.yourname.workers.dev
 const K='vocab1',$=id=>document.getElementById(id);
 const mk=(w,alts)=>({id:Date.now()+Math.random(),w,alts:alts||'',r:'',d:'',tried:false,right:0,wrong:0,streak:0,due:0});
 let cards=JSON.parse(localStorage.getItem(K)||'null');
@@ -91,7 +91,7 @@ function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';set
 const pct=c=>{const n=c.right+c.wrong;return n?c.right/n*100:-1};
 
 // ---- Jisho ----
-async function jisho(forms){
+async function jisho(forms,exactOnly){
   const k=encodeURIComponent(forms[0]);
   const url=WORKER_URL?WORKER_URL+'?keyword='+k:'https://jisho.org/api/v1/search/words?keyword='+k;
   const host=new URL(url).host;
@@ -106,10 +106,14 @@ async function jisho(forms){
   }
   if(!j)throw new Error(err);
   const m=x=>forms.includes(x.word)||forms.includes(x.reading);
-  const hit=j.data.find(e=>e.japanese.some(m));
-  if(!hit)return null;
-  const jp=hit.japanese.find(m);
-  return{r:jp.reading||'',d:hit.senses.slice(0,2).map(s=>s.english_definitions.slice(0,3).join(', ')).join('; ')};
+  let hit=j.data.find(e=>e.japanese.some(m)),note='';
+  if(!hit){
+    if(exactOnly||!j.data.length)return null;
+    hit=j.data[0];const f=hit.japanese[0];
+    note='No exact match. Closest result: '+(f.word||f.reading)+(f.word&&f.reading?' ('+f.reading+')':'')+'. Cancel if that’s wrong.';
+  }
+  const jp=hit.japanese.find(m)||hit.japanese[0];
+  return{note,r:jp.reading||'',d:hit.senses.slice(0,2).map(s=>s.english_definitions.slice(0,3).join(', ')).join('; ')};
 }
 const formsOf=c=>[c.w,...(c.alts?c.alts.split(',').map(x=>x.trim()):[])];
 
@@ -125,7 +129,7 @@ async function lookup(retry){
     // on retry, only fill fields you haven't already typed into
     if(!retry||!$('fr').value)$('fr').value=r?r.r:$('fr').value;
     if(!retry||!$('fd').value)$('fd').value=r?r.d:$('fd').value;
-    $('msg').textContent=r?'':'Not found on Jisho — type your own, or cancel.';
+    $('msg').textContent=r?(r.note||''):'Not found on Jisho — type your own, or cancel.';
     $('fields').style.display='flex';$('lk').style.display='none';
   }catch(e){$('msg').textContent='Couldn’t reach Jisho ('+(e&&e.message?e.message:e)+'). Retry, fill in manually, or cancel.';$('fields').style.display='flex';$('lk').style.display='none'}
   btn.disabled=false;btn.textContent=lab;
@@ -186,7 +190,7 @@ function next(){
   while(r>wt[i]&&i<pool.length-1){r-=wt[i];i++}
   cur=pool[i];stage=0;render();
   if(!cur.tried&&!cur.d){cur.tried=true;const c=cur;
-    jisho(formsOf(c)).then(r=>{if(r){c.r=c.r||r.r;c.d=c.d||r.d;save();if(cur===c)render()}}).catch(()=>{c.tried=false});}
+    jisho(formsOf(c),true).then(r=>{if(r){c.r=c.r||r.r;c.d=c.d||r.d;save();if(cur===c)render()}}).catch(()=>{c.tried=false});}
 }
 function render(){
   if(!cur)return;
@@ -225,6 +229,7 @@ function editCur(){if(cur)editCard(cur,'study')}
   });
   c.addEventListener('pointercancel',()=>{x0=null;c.style.transform=''});
 })();
+$('ver').textContent='build 9 · lookup via '+(WORKER_URL?new URL(WORKER_URL).host:'jisho.org direct');
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script></body></html>
