@@ -50,10 +50,11 @@ label{font-size:.8rem;color:var(--mut)}
   <button class="back" onclick="show('home')">‹ Home</button>
   <input id="fw" placeholder="Word" autocomplete="off" onkeydown="if(event.key==='Enter')lookup()">
   <button class="btn" id="lk" onclick="lookup()">Look up</button>
+  <div id="msg" style="color:var(--r);font-size:.9rem"></div>
   <div id="fields" style="display:none;flex-direction:column;gap:12px">
     <div><label>Reading</label><input id="fr"></div>
     <div><label>Definition / notes (shown on 2nd tap)</label><textarea id="fd" rows="4"></textarea></div>
-    <button class="btn p" onclick="saveForm()">Save</button>
+    <div class="row"><button class="btn" onclick="cancelForm()">Cancel</button><button class="btn p" onclick="saveForm()">Save</button></div>
   </div>
 </div>
 
@@ -92,7 +93,7 @@ const pct=c=>{const n=c.right+c.wrong;return n?c.right/n*100:-1};
 async function jisho(forms){
   const k=encodeURIComponent(forms[0]);
   const res=await fetch(WORKER_URL?WORKER_URL+'?keyword='+k:'https://jisho.org/api/v1/search/words?keyword='+k);
-  if(!res.ok)throw new Error('http');
+  if(!res.ok)throw new Error('HTTP '+res.status);
   const j=await res.json();
   const m=x=>forms.includes(x.word)||forms.includes(x.reading);
   const hit=j.data.find(e=>e.japanese.some(m));
@@ -104,16 +105,16 @@ const formsOf=c=>[c.w,...(c.alts?c.alts.split(',').map(x=>x.trim()):[])];
 
 // ---- Add / edit ----
 let editing=null;
-function openAdd(){editing=null;$('fw').value='';$('fw').disabled=false;$('fr').value='';$('fd').value='';$('fields').style.display='none';$('lk').style.display='';show('add');$('fw').focus()}
+function openAdd(){$('msg').textContent='';editing=null;$('fw').value='';$('fw').disabled=false;$('fr').value='';$('fd').value='';$('fields').style.display='none';$('lk').style.display='';show('add');$('fw').focus()}
 async function lookup(){
   const w=$('fw').value.trim();if(!w)return;
   $('lk').disabled=true;$('lk').textContent='…';
   try{
     const r=await jisho([w]);
     $('fr').value=r?r.r:'';$('fd').value=r?r.d:'';
-    if(!r)toast('Not found on Jisho — type your own');
+    $('msg').textContent=r?'':'Not found on Jisho — type your own, or cancel.';
     $('fields').style.display='flex';$('lk').style.display='none';
-  }catch(e){show('home');toast('Couldn’t reach Jisho. Try again.')}
+  }catch(e){$('msg').textContent='Couldn’t reach Jisho ('+(e&&e.message?e.message:e)+'). Fill in manually, or cancel.';$('fields').style.display='flex';$('lk').style.display='none'}
   $('lk').disabled=false;$('lk').textContent='Look up';
 }
 function saveForm(){
@@ -126,8 +127,9 @@ function saveForm(){
   returnTo=null;
 }
 let returnTo=null;
+function cancelForm(){editing=null;if(returnTo==='study'){show('study');render()}else show('home');returnTo=null}
 function editCard(c,from){
-  editing=c;returnTo=from;$('fw').value=c.w;$('fw').disabled=true;$('fr').value=c.r;$('fd').value=c.d;
+  $('msg').textContent='';editing=c;returnTo=from;$('fw').value=c.w;$('fw').disabled=true;$('fr').value=c.r;$('fd').value=c.d;
   $('fields').style.display='flex';$('lk').style.display='none';show('add');
 }
 
