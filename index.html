@@ -48,13 +48,13 @@ label{font-size:.8rem;color:var(--mut)}
 
 <div id="add" class="screen">
   <button class="back" onclick="show('home')">‹ Home</button>
-  <input id="fw" placeholder="Word" autocomplete="off" onkeydown="if(event.key==='Enter')lookup()">
-  <button class="btn" id="lk" onclick="lookup()">Look up</button>
+  <input id="fw" placeholder="Word" autocomplete="off" onkeydown="if(event.key==='Enter')lookup(false)">
+  <button class="btn" id="lk" onclick="lookup(false)">Look up</button>
   <div id="msg" style="color:var(--r);font-size:.9rem"></div>
   <div id="fields" style="display:none;flex-direction:column;gap:12px">
     <div><label>Reading</label><input id="fr"></div>
     <div><label>Definition / notes (shown on 2nd tap)</label><textarea id="fd" rows="4"></textarea></div>
-    <div class="row"><button class="btn" onclick="cancelForm()">Cancel</button><button class="btn p" onclick="saveForm()">Save</button></div>
+    <div class="row"><button class="btn" onclick="cancelForm()">Cancel</button><button class="btn" id="rt" onclick="lookup(true)">Retry lookup</button><button class="btn p" onclick="saveForm()">Save</button></div>
   </div>
 </div>
 
@@ -106,16 +106,19 @@ const formsOf=c=>[c.w,...(c.alts?c.alts.split(',').map(x=>x.trim()):[])];
 // ---- Add / edit ----
 let editing=null;
 function openAdd(){$('msg').textContent='';editing=null;$('fw').value='';$('fw').disabled=false;$('fr').value='';$('fd').value='';$('fields').style.display='none';$('lk').style.display='';show('add');$('fw').focus()}
-async function lookup(){
+async function lookup(retry){
   const w=$('fw').value.trim();if(!w)return;
-  $('lk').disabled=true;$('lk').textContent='…';
+  const btn=retry?$('rt'):$('lk'),lab=btn.textContent;
+  btn.disabled=true;btn.textContent='…';
   try{
     const r=await jisho([w]);
-    $('fr').value=r?r.r:'';$('fd').value=r?r.d:'';
+    // on retry, only fill fields you haven't already typed into
+    if(!retry||!$('fr').value)$('fr').value=r?r.r:$('fr').value;
+    if(!retry||!$('fd').value)$('fd').value=r?r.d:$('fd').value;
     $('msg').textContent=r?'':'Not found on Jisho — type your own, or cancel.';
     $('fields').style.display='flex';$('lk').style.display='none';
-  }catch(e){$('msg').textContent='Couldn’t reach Jisho ('+(e&&e.message?e.message:e)+'). Fill in manually, or cancel.';$('fields').style.display='flex';$('lk').style.display='none'}
-  $('lk').disabled=false;$('lk').textContent='Look up';
+  }catch(e){$('msg').textContent='Couldn’t reach Jisho ('+(e&&e.message?e.message:e)+'). Retry, fill in manually, or cancel.';$('fields').style.display='flex';$('lk').style.display='none'}
+  btn.disabled=false;btn.textContent=lab;
 }
 function saveForm(){
   const w=$('fw').value.trim();if(!w)return;
